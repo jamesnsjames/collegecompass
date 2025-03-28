@@ -23,15 +23,15 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Handle form submission
+// Handle form submission (update college info)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_college'])) {
     $name = $conn->real_escape_string($_POST['name']);
     $rating = floatval($_POST['rating']);
     $fees = floatval($_POST['fees']);
-    
+
     $stmt = $conn->prepare("UPDATE colleges SET name = ?, rating = ?, fees = ? WHERE id = ?");
     $stmt->bind_param("sdii", $name, $rating, $fees, $collegeId);
-    
+
     if ($stmt->execute()) {
         $success_message = "College information updated successfully!";
     } else {
@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['associate_course'])) 
         $insert_sql = "INSERT INTO college_courses (college_id, course_id) VALUES (?, ?)";
         $insert_stmt = $conn->prepare($insert_sql);
         $insert_stmt->bind_param("ii", $collegeId, $course_id);
-        
+
         if ($insert_stmt->execute()) {
             $success_message = "Course successfully associated with college!";
         } else {
@@ -76,6 +76,18 @@ if ($result->num_rows !== 1) {
 }
 
 $college = $result->fetch_assoc();
+
+// Get college alerts for this college
+$alerts_stmt = $conn->prepare("SELECT email, fees, created_at FROM college_alerts WHERE id = ? ORDER BY created_at DESC");
+$alerts_stmt->bind_param("i", $collegeId);
+$alerts_stmt->execute();
+$alerts_result = $alerts_stmt->get_result();
+$college_alerts = [];
+if ($alerts_result->num_rows > 0) {
+    while ($row = $alerts_result->fetch_assoc()) {
+        $college_alerts[] = $row;
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -102,6 +114,10 @@ $college = $result->fetch_assoc();
             display: none; /* Hidden by default */
             margin-top: 20px;
         }
+        .alerts-table {
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
@@ -121,7 +137,7 @@ $college = $result->fetch_assoc();
         <?php if (isset($error_message)): ?>
             <div class="alert alert-danger"><?php echo $error_message; ?></div>
         <?php endif; ?>
-        
+
         <div class="row">
             <div class="col-md-6 mb-4">
                 <div class="card college-card">
@@ -135,7 +151,7 @@ $college = $result->fetch_assoc();
                             <p><strong>Rating:</strong> <?php echo $college['rating']; ?>/5</p>
                             <p><strong>Fees:</strong> ₹<?php echo number_format($college['fees'], 2); ?></p>
                         </div>
-                        
+
                         <form id="editForm" class="edit-form" method="POST" action="college_dashboard.php">
                             <div class="mb-3">
                                 <label class="form-label">College Name</label>
@@ -157,7 +173,7 @@ $college = $result->fetch_assoc();
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-md-6 mb-4">
                 <div class="card mb-4">
                     <div class="card-header bg-warning text-white">
@@ -183,14 +199,87 @@ $college = $result->fetch_assoc();
                 </div>
             </div>
 
-            <div class="col-md-6 mb-4">
-                <div class="card college-card">
+            <div class="col-12 mb-4">
+                <div class="card alerts-table">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">College Alerts</h5>
+                    </div>
                     <div class="card-body">
-                        <h5 class="card-title">Management Options</h5>
-                        <div class="list-group">
-                            <a href="#" class="list-group-item list-group-item-action">View Applications</a>
-                            <a href="#" class="list-group-item list-group-item-action">Manage Notifications</a>
-                        </div>
+                        <?php if (empty($college_alerts)): ?>
+                            <p class="card-text">No alerts found for this college.</p>
+                        <?php else: ?>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Email</th>
+                                            <th>Fees Threshold</th>
+                                            <th>Created At</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($college_alerts as $alert): ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars($alert['email']); ?></td>
+                                                <td>₹<?php echo number_format($alert['fees'], 2); ?></td>
+                                                <td><?php echo htmlspecialchars($alert['created_at']); ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+            
+            <div class="col-12 mb-4">
+                <div class="card feedback-table">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">User Feedback</h5>
+                    </div>
+                    <div class="card-body">
+                        <?php
+                        $feedback_stmt = $conn->prepare("SELECT feedback_text, feedback_by, created_at FROM college_feedback WHERE college_id = ? ORDER BY created_at DESC");
+                        $feedback_stmt->bind_param("i", $collegeId);
+                        $feedback_stmt->execute();
+                        $feedback_result = $feedback_stmt->get_result();
+                        $college_feedback_list = [];
+                        if ($feedback_result->num_rows > 0) {
+                            while ($row = $feedback_result->fetch_assoc()) {
+                                $college_feedback_list[] = $row;
+                            }
+                        }
+                        ?>
+                        <?php if (empty($college_feedback_list)): ?>
+                            <p class="card-text">No feedback available for this college yet.</p>
+                        <?php else: ?>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Feedback</th>
+                                            <th>By</th>
+                                            <th>Created At</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($college_feedback_list as $feedback): ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars($feedback['feedback_text']); ?></td>
+                                                <td><?php echo htmlspecialchars($feedback['feedback_by']); ?></td>
+                                                <td><?php echo htmlspecialchars($feedback['created_at']); ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <?php endif; ?>
+                        <?php $feedback_stmt->close(); ?>
                     </div>
                 </div>
             </div>
@@ -205,7 +294,7 @@ $college = $result->fetch_assoc();
             document.getElementById('editForm').style.display = 'block';
             this.style.display = 'none';
         });
-        
+
         document.getElementById('cancelEdit').addEventListener('click', function() {
             document.getElementById('infoView').style.display = 'block';
             document.getElementById('editForm').style.display = 'none';
@@ -214,3 +303,27 @@ $college = $result->fetch_assoc();
     </script>
 </body>
 </html>
+<?php
+$conn->close();
+?>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle edit form visibility
+        document.getElementById('editBtn').addEventListener('click', function() {
+            document.getElementById('infoView').style.display = 'none';
+            document.getElementById('editForm').style.display = 'block';
+            this.style.display = 'none';
+        });
+
+        document.getElementById('cancelEdit').addEventListener('click', function() {
+            document.getElementById('infoView').style.display = 'block';
+            document.getElementById('editForm').style.display = 'none';
+            document.getElementById('editBtn').style.display = 'block';
+        });
+    </script>
+</body>
+</html>
+<?php
+$conn->close();
+?>

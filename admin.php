@@ -202,7 +202,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_college']) && iss
 // Handle course-college association
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['associate_course']) && isset($_SESSION['admin_logged_in'])) {
     $conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
-    
+
     $college_id = intval($_POST['college_id']);
     $course_id = intval($_POST['course_id']);
 
@@ -218,7 +218,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['associate_course']) &
         $insert_sql = "INSERT INTO college_courses (college_id, course_id) VALUES (?, ?)";
         $insert_stmt = $conn->prepare($insert_sql);
         $insert_stmt->bind_param("ii", $college_id, $course_id);
-        
+
         if ($insert_stmt->execute()) {
             echo "<div class='alert alert-success'>Course successfully associated with college!</div>";
         } else {
@@ -229,7 +229,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['associate_course']) &
     $conn->close();
 }
 ?>
-           
+
 
             <div class="card">
                 <div class="card-header bg-info text-white">
@@ -275,6 +275,103 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['associate_course']) &
                     <?php $conn->close(); ?>
                 </div>
             </div>
+
+
+            <div class="card mt-4">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">Registered College Alerts</h5>
+    </div>
+    <div class="card-body">
+        <?php
+        $conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
+        if ($conn->connect_error) {
+            die("Connection failed: " . $conn->connect_error);
+        }
+
+        $alert_result = $conn->query("SELECT id, email, fees, created_at FROM college_alerts ORDER BY created_at DESC");
+        ?>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>Fees Alert</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if ($alert_result && $alert_result->num_rows > 0): ?>
+                        <?php while ($alert = $alert_result->fetch_assoc()): ?>
+                            <tr>
+                                <td><?php echo $alert['id']; ?></td>
+                                <td><?php echo htmlspecialchars($alert['email']); ?></td>
+                                <td><?php echo number_format($alert['fees'], 2); ?></td>
+                                <td><?php echo $alert['created_at']; ?></td>
+                            </tr>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="4" class="text-center">No alerts found in database</td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php $conn->close(); ?>
+    </div>
+</div>
+
+            <div class="card mt-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">College Feedback</h5>
+                </div>
+                <div class="card-body">
+                    <?php
+                    $conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
+                    if ($conn->connect_error) {
+                        die("Connection failed: " . $conn->connect_error);
+                    }
+
+                    $feedback_result = $conn->query("SELECT cf.id, c.name AS college_name, cf.feedback_text, cf.feedback_by, cf.created_at
+                                                    FROM college_feedback cf
+                                                    JOIN colleges c ON cf.college_id = c.id
+                                                    ORDER BY cf.created_at DESC");
+                    ?>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>College</th>
+                                    <th>Feedback</th>
+                                    <th>Feedback By</th>
+                                    <th>Created At</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if ($feedback_result && $feedback_result->num_rows > 0): ?>
+                                    <?php while ($feedback = $feedback_result->fetch_assoc()): ?>
+                                        <tr>
+                                            <td><?php echo $feedback['id']; ?></td>
+                                            <td><?php echo htmlspecialchars($feedback['college_name']); ?></td>
+                                            <td><?php echo htmlspecialchars($feedback['feedback_text']); ?></td>
+                                            <td><?php echo htmlspecialchars($feedback['feedback_by']); ?></td>
+                                            <td><?php echo $feedback['created_at']; ?></td>
+                                        </tr>
+                                    <?php endwhile; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="5" class="text-center">No feedback found for colleges</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    <?php $conn->close(); ?>
+                </div>
+            </div>
+
         <?php endif; ?>
 
         <div class="debug-info">
@@ -290,6 +387,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['associate_course']) &
             <p>Logged In: <?php echo isset($_SESSION['admin_logged_in']) ? 'Yes' : 'No'; ?></p>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min

@@ -1,0 +1,42 @@
+function populateCourseDropdown() {
+    fetch('fetch_courses.php')
+        .then(response => response.json())
+        .then(courses => {
+            const dropdownMenu = document.querySelector('.dropdown-menu');
+            
+            // Clear existing courses
+            dropdownMenu.innerHTML = '';
+            
+            // Add courses dynamically
+            if (courses.length > 0) {
+                courses.forEach(course => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.className = 'dropdown-item';
+                    a.href = '#';
+                    a.textContent = course.course_name;
+                    
+                    // Optional: Add a data attribute for course ID if needed
+                    a.dataset.courseId = course.id;
+                    
+                    li.appendChild(a);
+                    dropdownMenu.appendChild(li);
+                });
+            } else {
+                // Fallback if no courses found
+                const li = document.createElement('li');
+                li.innerHTML = '<a class="dropdown-item disabled">No courses available</a>';
+                dropdownMenu.appendChild(li);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading courses:', error);
+        });
+}
+
+// Call the function when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    populateCourseDropdown();
+    
+    // Existing code remains the same...
+});

@@ -158,7 +158,17 @@
             </div>
         </div>
     </div>
-
+   <div class="text-center mt-4">
+            <a href="form.php" class="btn btn-primary btn-lg me-2">
+                <i class="fas fa-bell me-2"></i> SET YOUR ALERT NOW!!
+            </a>
+            <a href="feedback_form.php" class="btn btn-outline-info btn-lg">
+                <i class="fas fa-comment-dots me-2"></i> GIVE YOUR FEEDBACK
+            </a>
+        </div>
+    </div>
+    <br>
+    <br>
     <footer class="text-white py-4">
         <div class="container">
             <div class="row">
@@ -241,50 +251,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    // Add this to your existing <script> section in index.html
-function populateCourseDropdown() {
-    fetch('fetch_courses.php')
-        .then(response => response.json())
-        .then(courses => {
-            const dropdownMenu = document.querySelector('.dropdown-menu');
-            
-            // Clear existing courses
-            dropdownMenu.innerHTML = '';
-            
-            // Add courses dynamically
-            if (courses.length > 0) {
-                courses.forEach(course => {
-                    const li = document.createElement('li');
-                    const a = document.createElement('a');
-                    a.className = 'dropdown-item';
-                    a.href = '#';
-                    a.textContent = course.course_name;
-                    
-                    // Optional: Add a data attribute for course ID if needed
-                    a.dataset.courseId = course.id;
-                    
-                    li.appendChild(a);
-                    dropdownMenu.appendChild(li);
-                });
-            } else {
-                // Fallback if no courses found
-                const li = document.createElement('li');
-                li.innerHTML = '<a class="dropdown-item disabled">No courses available</a>';
-                dropdownMenu.appendChild(li);
-            }
-        })
-        .catch(error => {
-            console.error('Error loading courses:', error);
-        });
-}
-
-// Call the function when the page loads
-document.addEventListener('DOMContentLoaded', function() {
-    populateCourseDropdown();
-    
-    // Existing code remains the same...
-});
-// Modify the existing populateCourseDropdown function
 function populateCourseDropdown() {
     fetch('fetch_courses.php')
         .then(response => response.json())
@@ -325,6 +291,11 @@ function populateCourseDropdown() {
             console.error('Error loading courses:', error);
         });
 }
+
+// Call the function when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    populateCourseDropdown();
+});
 
 // New function to filter colleges by course
 function filterCollegesByCourse(courseId) {
@@ -540,6 +511,66 @@ function filterCollegesByCourse(courseId) {
             // Ensure "No colleges found" message is correctly displayed after sorting if no colleges match the current search term
             filterColleges();
         }
+        // ... your existing JavaScript ...
+
+    // Function to populate the college dropdown in the login modal
+    function populateCollegeDropdown() {
+        fetch('fetch_college_usernames.php')
+            .then(response => response.json())
+            .then(data => {
+                const collegeSelect = document.getElementById('collegeSelect');
+                collegeSelect.innerHTML = '<option value="">Select College</option>'; // Clear existing options
+
+                data.forEach(college => {
+                    const option = document.createElement('option');
+                    option.value = college.college_id; // Use college_id as the value
+                    option.textContent = college.username; // Display the username
+                    collegeSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching college usernames:', error);
+                // Optionally display an error message in the dropdown
+                const collegeSelect = document.getElementById('collegeSelect');
+                collegeSelect.innerHTML = '<option value="" disabled>Error loading colleges</option>';
+            });
+    }
+
+    // Call this function when the modal is shown
+    const collegeLoginModal = document.getElementById('collegeLoginModal');
+    collegeLoginModal.addEventListener('show.bs.modal', populateCollegeDropdown);
+
+    // Modify your college login form submission to send college_id and password
+    document.getElementById('collegeLoginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const collegeId = document.getElementById('collegeSelect').value; // Get the selected college_id
+        const password = document.getElementById('collegePassword').value;
+
+        fetch('college_login.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                collegeId: collegeId, // Send college_id
+                password: password
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = 'college_dashboard.php?college=' + collegeId;
+            } else {
+                alert('Login failed: ' + (data.message || 'Invalid credentials'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Login failed due to technical error');
+        });
+    });
+
+    // ... your other existing JavaScript ...
     </script>
 </body>
 </html>

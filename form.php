@@ -59,14 +59,17 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>College Alert Form</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
             background-color: #f8f9fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-top: 70px; /* Adjust padding for fixed button */
+            position: relative; /* For positioning the fixed button */
         }
         .container {
             max-width: 600px;
-            margin-top: 50px;
+            margin: 0 auto;
             padding: 30px;
             background: white;
             border-radius: 8px;
@@ -85,15 +88,39 @@ $conn->close();
         .btn-primary:hover {
             background-color: #2980b9;
         }
+        .home-btn-fixed {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #4CAF50; /* Green color */
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .home-btn-fixed:hover {
+            background-color: #45a049; /* Darker shade of green */
+        }
     </style>
 </head>
 <body>
+
+<div class="home-btn-fixed" onclick="window.location.href='index.html'">
+    <i class="fas fa-home"></i>
+</div>
 
 <div class="container">
     <h1 class="text-center mb-4"><i class="fas fa-bell"></i> College Alert Form</h1>
 
     <form method="POST" action="form.php">
-        <!-- College Dropdown -->
         <div class="mb-3">
             <label for="college_id" class="form-label">Choose College:</label>
             <select id="college_id" name="college_id" class="form-select" required>
@@ -110,19 +137,16 @@ $conn->close();
             </select>
         </div>
 
-        <!-- Email Input -->
         <div class="mb-3">
             <label for="email" class="form-label">Email ID:</label>
             <input type="email" id="email" name="email" class="form-control" required placeholder="Enter your email">
         </div>
 
-        <!-- Fees Input -->
         <div class="mb-3">
             <label for="fees" class="form-label">Fees:</label>
             <input type="number" id="fees" name="fees" class="form-control" required placeholder="Enter fees amount">
         </div>
 
-        <!-- Submit Button -->
         <div class="text-center">
             <button type="submit" class="btn btn-primary w-100"><i class="fas fa-paper-plane"></i> Submit</button>
         </div>
@@ -134,4 +158,3 @@ $conn->close();
 
 </body>
 </html>
-
