@@ -16,7 +16,7 @@ if ($conn->connect_error) {
 }
 
 // Fetch colleges from the database
-$sql = "SELECT id, name, rating FROM colleges";
+$sql = "SELECT id, name, rating,fees FROM colleges";
 $result = $conn->query($sql);
 
 $colleges = [];

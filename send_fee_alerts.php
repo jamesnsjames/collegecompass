@@ -25,7 +25,7 @@ $result = $conn->query($sql);
 
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
-        if ($row['new_fees'] == $row['alert_fees']) {
+        if ($row['new_fees'] <= $row['alert_fees']) {
             // Send email
             $mail = new PHPMailer(true);
 
