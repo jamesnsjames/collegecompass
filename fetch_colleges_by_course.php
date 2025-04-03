@@ -2,7 +2,7 @@
 // Database connection
 $servername = "localhost";
 $username = "root";
-$password = ""; 
+$password = "";
 $dbname = "fees_db";
 
 // Create connection
@@ -16,11 +16,11 @@ if ($conn->connect_error) {
 // Get course ID from GET parameter
 $course_id = isset($_GET['course_id']) ? intval($_GET['course_id']) : 0;
 
-// Fetch colleges offering the specific course
-$sql = "SELECT DISTINCT c.id, c.name, c.rating 
-        FROM colleges c
-        JOIN college_courses cc ON c.id = cc.college_id
-        WHERE cc.course_id = ?";
+// Fetch colleges offering the specific course, including the fees
+$sql = "SELECT DISTINCT c.id, c.name, c.rating, c.fees
+           FROM colleges c
+           JOIN college_courses cc ON c.id = cc.college_id
+           WHERE cc.course_id = ?";
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $course_id);

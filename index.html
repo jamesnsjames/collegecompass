@@ -407,49 +407,63 @@ function filterCollegesByCourse(courseId) {
         }
 
         // Display colleges in the UI
-        function displayColleges(colleges) {
-            const container = document.getElementById('card-container');
-            container.innerHTML = ''; // Clear existing cards
+       // Display colleges in the UI
+function displayColleges(colleges) {
+    const container = document.getElementById('card-container');
+    container.innerHTML = ''; // Clear existing cards
 
-            if (colleges.length === 0) {
-                container.innerHTML = `
-                    <div class="col-12 text-center py-5" id="no-results-message">
-                        <i class="fas fa-university fa-3x mb-3 text-muted"></i>
-                        <h4>No colleges found</h4>
-                        <p class="text-muted">College data is currently empty.</p>
+    if (colleges.length === 0) {
+        container.innerHTML = `
+            <div class="col-12 text-center py-5" id="no-results-message">
+                <i class="fas fa-university fa-3x mb-3 text-muted"></i>
+                <h4>No colleges found</h4>
+                <p class="text-muted">College data is currently empty.</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Debug - print the first college to see data structure
+    console.log("First college data:", colleges[0]);
+
+    colleges.forEach(college => {
+        const col = document.createElement('div');
+        col.className = 'col-md-3 college-card';
+        col.dataset.name = college.name.toLowerCase();
+        col.dataset.rating = college.rating;
+        col.dataset.fees = college.fees;
+        const imageName = college.name.toLowerCase(); // Keep spaces
+        const imageSrc = `${imageName}.jpeg`; // Assuming .jpeg extension
+
+        // Ensure fees is handled as a number
+        const feesAmount = parseFloat(college.fees) || 0;
+
+        col.innerHTML = `
+            <div class="card h-100">
+                <img src="${imageSrc}" class="card-img-top" alt="${college.name}">
+                <div class="card-body">
+                    <h5 class="card-title">${college.name}</h5>
+                    <div class="mb-2">
+                        <span class="badge bg-primary">Rating: ${college.rating}/5</span>
                     </div>
-                `;
-                return;
-            }
-
-            colleges.forEach(college => {
-                const col = document.createElement('div');
-                col.className = 'col-md-3 college-card';
-                col.dataset.name = college.name.toLowerCase();
-                col.dataset.rating = college.rating;
-                const imageName = college.name.toLowerCase(); // Keep spaces
-                const imageSrc = `${imageName}.jpeg`; // Assuming .jpeg extension
-
-                col.innerHTML = `
-                    <div class="card h-100">
-                        <img src="${imageSrc}" class="card-img-top" alt="${college.name}">
-                        <div class="card-body">
-                            <h5 class="card-title">${college.name}</h5>
-                            <div class="mb-3">
-                                <span class="badge bg-primary">Rating: ${college.rating}/5</span>
-                            </div>
-                            <a href="${college.name.toLowerCase().replace(/ /g, '')}details.html" class="btn btn-primary">
-                                <i class="fas fa-info-circle me-1"></i> Details
-                            </a>
-                        </div>
+                    <div class="mb-3">
+                        <span class="badge bg-success">
+                            <i class="fas fa-rupee-sign me-1"></i> Fees: ₹${feesAmount.toLocaleString()}
+                        </span>
                     </div>
-                `;
+                    <a href="${college.name.toLowerCase().replace(/ /g, '')}details.html" class="btn btn-primary">
+                        <i class="fas fa-info-circle me-1"></i> Details
+                    </a>
+                </div>
+            </div>
+        `;
 
-                container.appendChild(col);
-            });
-            // After displaying, call filterColleges to handle initial filtering if any search term is present
-            filterColleges();
-        }
+        container.appendChild(col);
+    });
+    
+    // After displaying, call filterColleges to handle initial filtering if any search term is present
+    filterColleges();
+}
 
         // Filter colleges based on search input
         function filterColleges() {
