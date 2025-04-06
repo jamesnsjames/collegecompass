@@ -183,21 +183,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['disassociate_course']
 // Handle removing college
 if (isset($_GET['remove_college']) && isset($_SESSION['admin_logged_in'])) {
     $conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
+
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+
     $college_id_to_remove = $conn->real_escape_string($_GET['remove_college']);
 
-    // Delete associated records in college_logins
-    $delete_college_logins_sql = "DELETE FROM college_logins WHERE college_id = $college_id_to_remove";
-    if ($conn->query($delete_college_logins_sql)) {
-        // Now delete the college from the colleges table
-        $sql_delete = "DELETE FROM colleges WHERE id = $college_id_to_remove";
+    // **Step 1: Delete associated records from college_courses**
+    $delete_college_courses_sql = "DELETE FROM college_courses WHERE college_id = ?";
+    $stmt_delete_courses = $conn->prepare($delete_college_courses_sql);
+    $stmt_delete_courses->bind_param("i", $college_id_to_remove);
 
-        if ($conn->query($sql_delete)) {
-            $success_message_college_remove = "<div class='alert alert-success'>College and its associations removed successfully!</div>";
+    if ($stmt_delete_courses->execute()) {
+        $stmt_delete_courses->close();
+
+        // **Step 2: Delete associated records from college_logins**
+        $delete_college_logins_sql = "DELETE FROM college_logins WHERE college_id = ?";
+        $stmt_delete_logins = $conn->prepare($delete_college_logins_sql);
+        $stmt_delete_logins->bind_param("i", $college_id_to_remove);
+
+        if ($stmt_delete_logins->execute()) {
+            $stmt_delete_logins->close();
+
+            // **Step 3: Now delete the college from the colleges table**
+            $sql_delete = "DELETE FROM colleges WHERE id = ?";
+            $stmt_delete_college = $conn->prepare($sql_delete);
+            $stmt_delete_college->bind_param("i", $college_id_to_remove);
+
+            if ($stmt_delete_college->execute()) {
+                $success_message_college_remove = "<div class='alert alert-success'>College and its associations removed successfully!</div>";
+            } else {
+                $error_message_college_remove = "<div class='alert alert-danger'>Error removing college: " . $stmt_delete_college->error . "</div>";
+            }
+            $stmt_delete_college->close();
+
         } else {
-            $error_message_college_remove = "<div class='alert alert-danger'>Error removing college: " . $conn->error . "</div>";
+            $error_message_college_remove = "<div class='alert alert-danger'>Error removing college logins: " . $stmt_delete_logins->error . "</div>";
         }
+
     } else {
-        $error_message_college_remove = "<div class='alert alert-danger'>Error removing college logins: " . $conn->error . "</div>";
+        $error_message_college_remove = "<div class='alert alert-danger'>Error removing associated courses: " . $stmt_delete_courses->error . "</div>";
     }
 
     $conn->close();
@@ -598,18 +624,7 @@ if (isset($_GET['remove_feedback']) && isset($_SESSION['admin_logged_in'])) {
 
         <?php endif; ?>
 
-        <div class="debug-info">
-            <p><strong>Debug Information:</strong></p>
-            <p>PHP Version: <?php echo phpversion(); ?></p>
-            <p>Session Status: <?php echo session_status(); ?> (<?php
-                switch(session_status()) {
-                    case PHP_SESSION_DISABLED: echo 'disabled'; break;
-                    case PHP_SESSION_NONE: echo 'none'; break;
-                    case PHP_SESSION_ACTIVE: echo 'active'; break;
-                }
-            ?>)</p>
-            <p>Logged In: <?php echo isset($_SESSION['admin_logged_in']) ? 'Yes' : 'No'; ?></p>
-        </div>
+     
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

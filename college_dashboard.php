@@ -638,28 +638,34 @@ if (!$feedback_stmt) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Toggle edit form visibility
-        const editBtn = document.getElementById('editBtn');
-        const cancelEditBtn = document.getElementById('cancelEdit');
-        const infoViewDiv = document.getElementById('infoView');
-        const editForm = document.getElementById('editForm');
+       document.addEventListener('DOMContentLoaded', function() {
+    const editBtn = document.getElementById('editBtn');
+    const cancelEditBtn = document.getElementById('cancelEdit');
+    const infoViewDiv = document.getElementById('infoView');
+    const editForm = document.getElementById('editForm');
 
-        if (editBtn && cancelEditBtn && infoViewDiv && editForm) {
-            editBtn.addEventListener('click', function() {
-                infoViewDiv.style.display = 'none';
-                editForm.style.display = 'block';
-                editBtn.style.display = 'none';
-            });
+    if (editBtn && cancelEditBtn && infoViewDiv && editForm) {
+        editBtn.addEventListener('click', function() {
+            infoViewDiv.style.display = 'none';
+            editForm.style.display = 'block';
+            editBtn.style.display = 'none';
+        });
 
-            cancelEditBtn.addEventListener('click', function() {
-                infoViewDiv.style.display = 'block';
-                editForm.style.display = 'none';
-                editBtn.style.display = 'inline-block';
-            });
-        }
-
-        window.setTimeout(function() {
-            let alerts = document.querySelectorAll('.alert-dismissible');
-            alerts.forEach(function(alert) {
-                if (typeof bootstrap !== 'undefined' && bootstrap.
-
+        cancelEditBtn.addEventListener('click', function() {
+            infoViewDiv.style.display = 'block';
+            editForm.style.display = 'none';
+            editBtn.style.display = 'inline-block';
+        });
+    }
+    
+    // Auto-dismiss alerts after 5 seconds
+    window.setTimeout(function() {
+        let alerts = document.querySelectorAll('.alert-dismissible');
+        alerts.forEach(function(alert) {
+            if (typeof bootstrap !== 'undefined' && bootstrap.Alert) {
+                let bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }
+        });
+    }, 5000);
+});</script>
