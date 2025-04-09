@@ -217,12 +217,7 @@ function displayColleges(colleges) {
                     <div class="mb-2">
                         <span class="badge bg-primary">Rating: ${college.rating}/5</span>
                     </div>
-                    <div class="mb-3">
-                        <span class="badge bg-success">
-                            <i class="fas fa-rupee-sign me-1"></i> Fees: ₹${feesAmount.toLocaleString()}
-                        </span>
-                    </div>
-                    
+                
                     <a href="${college.name.toLowerCase().replace(/ /g, '')}details.html" class="btn btn-primary">
                         <i class="fas fa-info-circle me-1"></i> Details
                     </a>

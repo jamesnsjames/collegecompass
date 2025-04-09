@@ -1,4 +1,13 @@
 <?php
+
+
+
+// Add cache control headers to prevent browser caching
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
+
 // File: admin.php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -14,6 +23,10 @@ $db_user = 'root';
 $db_pass = '';
 $db_name = 'fees_db';
 
+
+
+
+
 // Test database connection
 try {
     $test_conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
@@ -24,6 +37,11 @@ try {
 } catch (Exception $e) {
     die("Database error: " . $e->getMessage());
 }
+
+
+
+
+
 
 // Handle login
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
@@ -42,6 +60,8 @@ if (isset($_GET['logout'])) {
     header("Location: admin.php");
     exit;
 }
+
+
 
 // Handle adding new college
 $success_message = $error_message = '';
@@ -72,6 +92,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_college']) && iss
 
     $conn->close();
 }
+
+
+
+
+
+
+
+
+
+
+
+// Handle rating modification
+$success_message = $error_message = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_college']) && isset($_SESSION['admin_logged_in'])) {
+    $conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
+
+    $name = $conn->real_escape_string($_POST['name'] ?? '');
+    $rating = floatval($_POST['rating'] ?? 0);
+    
+
+    $check_sql = "SELECT id FROM colleges WHERE name = ?";
+    $check_stmt = $conn->prepare($check_sql);
+    $check_stmt->bind_param("s", $name);
+    $check_stmt->execute();
+    $check_result = $check_stmt->get_result();
+
+   
+        $sql = "update colleges set rating = $rating where name='$name'";
+
+        if ($conn->query($sql)) {
+            $success_message = "College added successfully!";
+        } else {
+            $error_message = "Error: " . $conn->error;
+        }
+    
+
+    $conn->close();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Handle adding new course
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_course']) && isset($_SESSION['admin_logged_in'])) {
@@ -126,6 +210,33 @@ if (isset($_GET['remove_course']) && isset($_SESSION['admin_logged_in'])) {
     $conn->close();
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Handle course-college association
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['associate_course']) && isset($_SESSION['admin_logged_in'])) {
     $conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
@@ -156,6 +267,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['associate_course']) &
     $conn->close();
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Handle course-college disassociation
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['disassociate_course']) && isset($_SESSION['admin_logged_in'])) {
     $conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
@@ -179,6 +329,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['disassociate_course']
 
     $conn->close();
 }
+
+
+
+
+
+
 
 // Handle removing college
 if (isset($_GET['remove_college']) && isset($_SESSION['admin_logged_in'])) {
@@ -298,11 +454,11 @@ if (isset($_GET['remove_feedback']) && isset($_SESSION['admin_logged_in'])) {
                 <form method="POST">
                     <div class="form-group">
                         <label for="username">Username</label>
-                        <input type="text" class="form-control" id="username" name="username" required value="admin">
+                        <input type="text" class="form-control" id="username" name="username" >
                     </div>
                     <div class="form-group">
                         <label for="password">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" required value="admin123">
+                        <input type="password" class="form-control" id="password" name="password" >
                     </div>
                     <button type="submit" name="login" class="btn btn-primary w-100">Login</button>
                 </form>
@@ -342,6 +498,87 @@ if (isset($_GET['remove_feedback']) && isset($_SESSION['admin_logged_in'])) {
                     </form>
                 </div>
             </div>
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+             <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Modify Rating</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label for="name">College Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="rating">Rating (0-5)</label>
+                            <input type="number" class="form-control" id="rating" name="rating" min="0" max="5" step="0.1" required>
+                        </div>
+                      
+                        <button type="submit" name="add_college" class="btn btn-primary">Modify Rating</button>
+                    </form>
+                </div>
+            </div>
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+           
+            
+            
+   
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
             <div class="card mb-4">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">Add New Course</h5>
@@ -438,6 +675,17 @@ if (isset($_GET['remove_feedback']) && isset($_SESSION['admin_logged_in'])) {
                     </form>
                 </div>
             </div>
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
             <div class="card mb-4">
                 <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">Disassociate Course from College</h5>
@@ -475,6 +723,15 @@ if (isset($_GET['remove_feedback']) && isset($_SESSION['admin_logged_in'])) {
                     </form>
                 </div>
             </div>
+
+
+
+
+
+
+
+
+
 
             <div class="card">
                 <div class="card-header bg-info text-white">
