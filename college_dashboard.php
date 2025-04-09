@@ -381,10 +381,7 @@ if (!$feedback_stmt) {
                                 <label class="form-label">College Name</label>
                                 <input type="text" class="form-control" name="name" value="<?php echo htmlspecialchars($college['name']); ?>" required>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Rating (0.0 - 5.0)</label>
-                                <input type="number" class="form-control" name="rating" min="0" max="5" step="0.1" value="<?php echo $college['rating']; ?>" required>
-                            </div>
+                           
                             <div class="mb-3">
                                 <label class="form-label">Fees (₹)</label>
                                 <input type="number" class="form-control" name="fees" min="0" step="0.01" value="<?php echo $college['fees']; ?>" required>
